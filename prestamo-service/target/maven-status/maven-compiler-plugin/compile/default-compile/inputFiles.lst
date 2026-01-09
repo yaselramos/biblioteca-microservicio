@@ -13,6 +13,6 @@
 /Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/prestamo/config/SwaggerConfig.java
 /Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/prestamo/config/JwtFilter.java
 /Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/prestamo/dto/LibroDTO.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/prestamo/config/KafkaConfig.java
 /Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/PrestamoServiceApplication.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/prestamo/config/RabbitMQConfig.java
 /Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/main/java/com/biblioteca/prestamo/config/RestTemplateConfig.java

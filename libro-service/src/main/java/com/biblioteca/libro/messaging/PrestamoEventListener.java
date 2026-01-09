@@ -1,11 +1,11 @@
 package com.biblioteca.libro.messaging;
 
-import com.biblioteca.libro.config.RabbitMQConfig;
+import com.biblioteca.libro.config.KafkaConfig;
 import com.biblioteca.libro.dto.PrestamoEvent;
 import com.biblioteca.libro.service.LibroService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,7 +19,7 @@ public class PrestamoEventListener {
         this.libroService = libroService;
     }
 
-    @RabbitListener(queues = RabbitMQConfig.PRESTAMO_QUEUE)
+    @KafkaListener(topics = KafkaConfig.PRESTAMO_TOPIC, groupId = "libro-group")
     public void handlePrestamoEvent(PrestamoEvent event) {
         logger.info("📥 Recibido evento de préstamo: {}", event);
 
@@ -46,4 +46,3 @@ public class PrestamoEventListener {
         }
     }
 }
-

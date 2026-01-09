@@ -6,6 +6,7 @@ import com.biblioteca.prestamo.entity.Prestamo;
 import com.biblioteca.prestamo.exception.ResourceNotFoundException;
 import com.biblioteca.prestamo.messaging.PrestamoEventPublisher;
 import com.biblioteca.prestamo.repository.PrestamoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +55,11 @@ public class PrestamoService {
                 );
             }
 
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException("Libro no encontrado: " + libroId);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new ResourceNotFoundException("Libro no encontrado: " + libroId);
+            }
+            throw e;
         }
 
         // 2. Verificar si el usuario ya tiene un préstamo activo de este libro
@@ -134,4 +138,3 @@ public class PrestamoService {
         return repo.findByUsernameAndDevueltoFalse(username);
     }
 }
-
