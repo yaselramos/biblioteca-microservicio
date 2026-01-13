@@ -21,9 +21,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generarToken(String username) {
+    public String generarToken(String username, String rol) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("rol", rol)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 horas
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -32,6 +33,10 @@ public class JwtService {
 
     public String extraerUsuario(String token) {
         return extraerClaims(token).getSubject();
+    }
+
+    public String extraerRol(String token) {
+        return extraerClaims(token).get("rol", String.class);
     }
 
     public boolean validarToken(String token, String username) {
