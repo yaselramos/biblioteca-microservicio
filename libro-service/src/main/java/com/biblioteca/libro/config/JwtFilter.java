@@ -37,15 +37,17 @@ public class JwtFilter extends OncePerRequestFilter {
             if (token != null && !token.trim().isEmpty()) {
                 try {
                     String username = jwtService.extraerUsuario(token);
+                    String rol = jwtService.extraerRol(token);
 
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        // Por ahora asumimos ROLE_ADMIN para simplificar
-                        // En producción deberías extraer el rol del token
+                        // Usar el rol del token, o USER por defecto
+                        String authority = rol != null ? "ROLE_" + rol : "ROLE_USER";
+
                         UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(
                                         username,
                                         null,
-                                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                                        Collections.singletonList(new SimpleGrantedAuthority(authority))
                                 );
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
