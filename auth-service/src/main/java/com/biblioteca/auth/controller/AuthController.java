@@ -43,7 +43,7 @@ public class AuthController {
         }
 
         String token = jwtService.generarToken(user.getUsername());
-        return ResponseEntity.ok(new AuthResponse(token));
+        return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRol().name()));
     }
 
     @PostMapping("/register")
@@ -57,6 +57,7 @@ public class AuthController {
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setUsername(request.username());
         nuevoUsuario.setPassword(encoder.encode(request.password()));
+        nuevoUsuario.setEmail(request.email());
 
         // Asignar rol (por defecto USER si no se especifica)
         if (request.rol() != null && !request.rol().isEmpty()) {
@@ -70,12 +71,10 @@ public class AuthController {
         }
 
         // Guardar el usuario
-        usuarioRepository.save(nuevoUsuario);
+        Usuario savedUser = usuarioRepository.save(nuevoUsuario);
 
-        // Generar token JWT
-        String token = jwtService.generarToken(nuevoUsuario.getUsername());
-
-        return ResponseEntity.status(201).body(new AuthResponse(token));
+        // Devolver el usuario (sin contraseña)
+        return ResponseEntity.status(201).body(savedUser);
     }
 }
 

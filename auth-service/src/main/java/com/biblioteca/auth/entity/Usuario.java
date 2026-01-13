@@ -1,6 +1,7 @@
 package com.biblioteca.auth.entity;
 
 import com.biblioteca.auth.service.Rol;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,7 +9,7 @@ import jakarta.validation.constraints.Size;
 @Entity
 public class Usuario {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true)
@@ -16,8 +17,11 @@ public class Usuario {
     @Size(min = 3, max = 50, message = "El username debe tener entre 3 y 50 caracteres")
     private String username;
 
+    @JsonIgnore
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
+
+    private String email;
 
     @Enumerated(EnumType.STRING)
     private Rol rol;
@@ -53,5 +57,13 @@ public class Usuario {
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
