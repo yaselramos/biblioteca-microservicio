@@ -37,17 +37,13 @@ public class JwtFilter extends OncePerRequestFilter {
             if (token != null && !token.trim().isEmpty()) {
                 try {
                     String username = jwtService.extraerUsuario(token);
-                    String rol = jwtService.extraerRol(token);
 
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        // Usar el rol del token, o USER por defecto
-                        String authority = rol != null ? "ROLE_" + rol : "ROLE_USER";
-
                         UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(
                                         username,
                                         null,
-                                        Collections.singletonList(new SimpleGrantedAuthority(authority))
+                                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
                                 );
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
