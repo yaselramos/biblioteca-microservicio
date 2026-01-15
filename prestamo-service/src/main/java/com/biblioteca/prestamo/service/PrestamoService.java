@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -118,18 +119,34 @@ public class PrestamoService {
         return prestamoActualizado;
     }
 
+    /**
+     * Obtiene préstamos de un usuario con caché
+     */
+    @Cacheable(value = "prestamosUsuario", key = "#username")
     public List<Prestamo> obtenerPrestamosUsuario(String username) {
         return repo.findByUsername(username);
     }
 
+    /**
+     * Lista todos los préstamos con caché
+     */
+    @Cacheable(value = "prestamos")
     public List<Prestamo> listarTodos() {
         return repo.findAll();
     }
 
+    /**
+     * Busca un préstamo por ID con caché
+     */
+    @Cacheable(value = "prestamo", key = "#id", unless = "#result.isEmpty()")
     public Optional<Prestamo> buscarPorId(Long id) {
         return repo.findById(id);
     }
 
+    /**
+     * Obtiene préstamos activos de un usuario con caché
+     */
+    @Cacheable(value = "prestamosActivos", key = "#username")
     public List<Prestamo> obtenerPrestamosActivos(String username) {
         return repo.findByUsernameAndDevueltoFalse(username);
     }
