@@ -75,7 +75,7 @@ public class Libro {
 
     public void setAutor(String autor) {
         this.autor = autor;
-    }    }
+    }
 
     public Integer getStock() {
         return stock;
