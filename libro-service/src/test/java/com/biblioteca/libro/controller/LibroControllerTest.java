@@ -2,6 +2,7 @@ package com.biblioteca.libro.controller;
 
 
 import com.biblioteca.libro.entity.Libro;
+import com.biblioteca.libro.service.JwtService;
 import com.biblioteca.libro.service.LibroService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,10 +37,14 @@ class LibroControllerTest {
     @MockBean
     private LibroService libroService;
 
+    @MockBean
+    private JwtService jwtService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
+    @WithMockUser
     void crear_deberiaRetornar201YLibroCreado() throws Exception {
         // Arrange
         Libro libroCrear = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -48,6 +55,7 @@ class LibroControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/libros")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(libroCrear)))
                 .andExpect(status().isCreated())
@@ -60,6 +68,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void listar_deberiaRetornar200YListaDeLibros() throws Exception {
         // Arrange
         Libro libro1 = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -85,6 +94,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void buscarPorId_existente_deberiaRetornar200YLibro() throws Exception {
         // Arrange
         Libro libro = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -105,6 +115,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void buscarPorId_noExistente_deberiaRetornar404() throws Exception {
         // Arrange
         when(libroService.buscarPorId(999L)).thenReturn(Optional.empty());
@@ -117,6 +128,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void actualizar_existente_deberiaRetornar200YLibroActualizado() throws Exception {
         // Arrange
         Libro libroActualizar = new Libro("Java Efectivo 2da Edición", "Joshua Bloch", 8);
@@ -127,6 +139,7 @@ class LibroControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/libros/1")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(libroActualizar)))
                 .andExpect(status().isOk())
@@ -139,6 +152,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void actualizar_noExistente_deberiaRetornar404() throws Exception {
         // Arrange
         Libro libro = new Libro("Libro No Existente", "Autor Desconocido", 1);
@@ -147,6 +161,7 @@ class LibroControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/libros/999")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(libro)))
                 .andExpect(status().isNotFound());
@@ -155,30 +170,35 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void eliminar_existente_deberiaRetornar204() throws Exception {
         // Arrange
         when(libroService.eliminar(1L)).thenReturn(true);
 
         // Act & Assert
-        mockMvc.perform(delete("/libros/1"))
+        mockMvc.perform(delete("/libros/1")
+                .with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(libroService, times(1)).eliminar(1L);
     }
 
     @Test
+    @WithMockUser
     void eliminar_noExistente_deberiaRetornar404() throws Exception {
         // Arrange
         when(libroService.eliminar(999L)).thenReturn(false);
 
         // Act & Assert
-        mockMvc.perform(delete("/libros/999"))
+        mockMvc.perform(delete("/libros/999")
+                .with(csrf()))
                 .andExpect(status().isNotFound());
 
         verify(libroService, times(1)).eliminar(999L);
     }
 
     @Test
+    @WithMockUser
     void listarPaginado_deberiaRetornar200YPaginaDeLibros() throws Exception {
         // Arrange
         Libro libro = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -210,6 +230,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void buscarPorTitulo_deberiaRetornar200YPaginaDeLibros() throws Exception {
         // Arrange
         Libro libro = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -235,6 +256,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void buscarPorAutor_deberiaRetornar200YPaginaDeLibros() throws Exception {
         // Arrange
         Libro libro = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -260,6 +282,7 @@ class LibroControllerTest {
     }
 
     @Test
+    @WithMockUser
     void obtenerDisponibles_deberiaRetornar200YLibrosConStock() throws Exception {
         // Arrange
         Libro libro = new Libro("Java Efectivo", "Joshua Bloch", 5);
