@@ -1,13 +1,12 @@
 package com.biblioteca.prestamo.controller;
 
 import com.biblioteca.prestamo.config.JwtFilter;
+import com.biblioteca.prestamo.config.SecurityConfig;
 import com.biblioteca.prestamo.entity.Prestamo;
 import com.biblioteca.prestamo.service.JwtService;
 import com.biblioteca.prestamo.service.PrestamoService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,8 +31,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = PrestamoController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtFilter.class))
-@AutoConfigureMockMvc(addFilters = false)
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {JwtFilter.class, SecurityConfig.class}))
 class PrestamoControllerTest {
 
     @Autowired
@@ -44,9 +44,6 @@ class PrestamoControllerTest {
 
     @MockBean
     private JwtService jwtService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     @WithMockUser(username = "testuser")
@@ -71,7 +68,7 @@ class PrestamoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "testuser")
     void devolver_deberiaRetornar200YPrestamoActualizado() throws Exception {
         // Arrange
         Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(5));
@@ -179,7 +176,7 @@ class PrestamoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin")
     void listarTodos_deberiaRetornar200YListaDeTodosPrestamos() throws Exception {
         // Arrange
         Prestamo prestamo1 = new Prestamo(1L, "user1", LocalDate.now().minusDays(5));
@@ -201,7 +198,7 @@ class PrestamoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin")
     void listarTodosPaginados_deberiaRetornar200YPaginaDeTodosPrestamos() throws Exception {
         // Arrange
         Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(2));
@@ -226,7 +223,7 @@ class PrestamoControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "admin")
     void prestamosPorLibro_deberiaRetornar200YPaginaDePrestamos() throws Exception {
         // Arrange
         Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(2));

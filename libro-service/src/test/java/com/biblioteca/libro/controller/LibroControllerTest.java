@@ -1,13 +1,13 @@
 package com.biblioteca.libro.controller;
 
 import com.biblioteca.libro.config.JwtFilter;
+import com.biblioteca.libro.config.SecurityConfig;
 import com.biblioteca.libro.entity.Libro;
 import com.biblioteca.libro.service.JwtService;
 import com.biblioteca.libro.service.LibroService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,8 +32,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = LibroController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtFilter.class))
-@AutoConfigureMockMvc(addFilters = false)
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = {JwtFilter.class, SecurityConfig.class}))
 class LibroControllerTest {
 
     @Autowired
@@ -49,7 +50,7 @@ class LibroControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void crear_deberiaRetornar201YLibroCreado() throws Exception {
         // Arrange
         Libro libroCrear = new Libro("Java Efectivo", "Joshua Bloch", 5);
@@ -133,7 +134,7 @@ class LibroControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void actualizar_existente_deberiaRetornar200YLibroActualizado() throws Exception {
         // Arrange
         Libro libroActualizar = new Libro("Java Efectivo 2da Edicion", "Joshua Bloch", 8);
@@ -157,7 +158,7 @@ class LibroControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void actualizar_noExistente_deberiaRetornar404() throws Exception {
         // Arrange
         Libro libro = new Libro("Libro No Existente", "Autor Desconocido", 1);
@@ -175,7 +176,7 @@ class LibroControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void eliminar_existente_deberiaRetornar204() throws Exception {
         // Arrange
         when(libroService.eliminar(1L)).thenReturn(true);
@@ -189,7 +190,7 @@ class LibroControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void eliminar_noExistente_deberiaRetornar404() throws Exception {
         // Arrange
         when(libroService.eliminar(999L)).thenReturn(false);
