@@ -1,13 +1,17 @@
 package com.biblioteca.prestamo.controller;
 
+import com.biblioteca.prestamo.config.JwtFilter;
 import com.biblioteca.prestamo.entity.Prestamo;
 import com.biblioteca.prestamo.service.JwtService;
 import com.biblioteca.prestamo.service.PrestamoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,11 +28,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PrestamoController.class)
+@WebMvcTest(value = PrestamoController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtFilter.class))
+@AutoConfigureMockMvc(addFilters = false)
 class PrestamoControllerTest {
 
     @Autowired
@@ -54,7 +59,6 @@ class PrestamoControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/prestamos/1")
-                .with(user("testuser"))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -105,8 +109,7 @@ class PrestamoControllerTest {
                 .thenReturn(Arrays.asList(prestamo1, prestamo2));
 
         // Act & Assert
-        mockMvc.perform(get("/prestamos")
-                .with(user("testuser")))
+        mockMvc.perform(get("/prestamos"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
@@ -135,7 +138,6 @@ class PrestamoControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/prestamos/paginated")
-                .with(user("testuser"))
                 .param("page", "0")
                 .param("size", "10")
                 .param("sortBy", "fechaPrestamo")
@@ -165,8 +167,7 @@ class PrestamoControllerTest {
                 .thenReturn(Collections.singletonList(prestamo));
 
         // Act & Assert
-        mockMvc.perform(get("/prestamos/activos")
-                .with(user("testuser")))
+        mockMvc.perform(get("/prestamos/activos"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())

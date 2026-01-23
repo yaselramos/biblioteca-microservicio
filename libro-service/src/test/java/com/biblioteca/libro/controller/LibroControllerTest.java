@@ -1,14 +1,17 @@
 package com.biblioteca.libro.controller;
 
-
+import com.biblioteca.libro.config.JwtFilter;
 import com.biblioteca.libro.entity.Libro;
 import com.biblioteca.libro.service.JwtService;
 import com.biblioteca.libro.service.LibroService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +31,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(LibroController.class)
+@WebMvcTest(value = LibroController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtFilter.class))
+@AutoConfigureMockMvc(addFilters = false)
 class LibroControllerTest {
 
     @Autowired
@@ -74,7 +79,7 @@ class LibroControllerTest {
         Libro libro1 = new Libro("Java Efectivo", "Joshua Bloch", 5);
         libro1.setId(1L);
 
-        Libro libro2 = new Libro("Spring Boot en Acción", "Craig Walls", 3);
+        Libro libro2 = new Libro("Spring Boot en Accion", "Craig Walls", 3);
         libro2.setId(2L);
 
         when(libroService.listar()).thenReturn(Arrays.asList(libro1, libro2));
@@ -88,7 +93,7 @@ class LibroControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].titulo").value("Java Efectivo"))
                 .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].titulo").value("Spring Boot en Acción"));
+                .andExpect(jsonPath("$[1].titulo").value("Spring Boot en Accion"));
 
         verify(libroService, times(1)).listar();
     }
@@ -131,8 +136,8 @@ class LibroControllerTest {
     @WithMockUser
     void actualizar_existente_deberiaRetornar200YLibroActualizado() throws Exception {
         // Arrange
-        Libro libroActualizar = new Libro("Java Efectivo 2da Edición", "Joshua Bloch", 8);
-        Libro libroActualizado = new Libro("Java Efectivo 2da Edición", "Joshua Bloch", 8);
+        Libro libroActualizar = new Libro("Java Efectivo 2da Edicion", "Joshua Bloch", 8);
+        Libro libroActualizado = new Libro("Java Efectivo 2da Edicion", "Joshua Bloch", 8);
         libroActualizado.setId(1L);
 
         when(libroService.actualizar(eq(1L), any(Libro.class))).thenReturn(libroActualizado);
@@ -144,7 +149,7 @@ class LibroControllerTest {
                 .content(objectMapper.writeValueAsString(libroActualizar)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.titulo").value("Java Efectivo 2da Edición"))
+                .andExpect(jsonPath("$.titulo").value("Java Efectivo 2da Edicion"))
                 .andExpect(jsonPath("$.autor").value("Joshua Bloch"))
                 .andExpect(jsonPath("$.stock").value(8));
 
@@ -306,3 +311,4 @@ class LibroControllerTest {
         verify(libroService, times(1)).obtenerLibrosDisponibles(any(Pageable.class));
     }
 }
+
