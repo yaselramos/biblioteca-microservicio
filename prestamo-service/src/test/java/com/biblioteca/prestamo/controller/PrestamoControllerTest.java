@@ -1,6 +1,7 @@
 package com.biblioteca.prestamo.controller;
 
 import com.biblioteca.prestamo.entity.Prestamo;
+import com.biblioteca.prestamo.service.JwtService;
 import com.biblioteca.prestamo.service.PrestamoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,6 +37,9 @@ class PrestamoControllerTest {
 
     @MockBean
     private PrestamoService prestamoService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -51,6 +56,7 @@ class PrestamoControllerTest {
         // Act & Assert
         mockMvc.perform(post("/prestamos/1")
                 .with(user("testuser"))
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
@@ -62,6 +68,7 @@ class PrestamoControllerTest {
     }
 
     @Test
+    @WithMockUser
     void devolver_deberiaRetornar200YPrestamoActualizado() throws Exception {
         // Arrange
         Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(5));
@@ -73,6 +80,7 @@ class PrestamoControllerTest {
 
         // Act & Assert
         mockMvc.perform(put("/prestamos/1/devolver")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -171,6 +179,7 @@ class PrestamoControllerTest {
     }
 
     @Test
+    @WithMockUser
     void buscarPorId_existente_deberiaRetornar200YPrestamo() throws Exception {
         // Arrange
         Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(2));
@@ -190,6 +199,7 @@ class PrestamoControllerTest {
     }
 
     @Test
+    @WithMockUser
     void buscarPorId_noExistente_deberiaRetornar404() throws Exception {
         // Arrange
         when(prestamoService.buscarPorId(999L)).thenReturn(Optional.empty());
