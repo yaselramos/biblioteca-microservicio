@@ -34,6 +34,10 @@ public class JwtService {
         return extraerClaims(token).getSubject();
     }
 
+    public String extraerRol(String token) {
+        return extraerClaims(token).get("rol", String.class);
+    }
+
     public boolean validarToken(String token, String username) {
         final String extractedUsername = extraerUsuario(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));

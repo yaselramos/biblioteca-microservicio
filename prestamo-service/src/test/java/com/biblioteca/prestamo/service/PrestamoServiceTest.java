@@ -96,13 +96,13 @@ class PrestamoServiceTest {
         Long libroId = 999L;
 
         when(restTemplate.getForEntity(anyString(), eq(LibroDTO.class)))
-                .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+                .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
 
         // When & Then
-        assertThrows(ResourceNotFoundException.class, () -> {
-            prestamoService.prestarLibro(username, libroId);
-        });
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> prestamoService.prestarLibro(username, libroId));
 
+        assertTrue(exception.getMessage().contains("Libro no encontrado"));
         verify(prestamoRepository, never()).save(any());
         verify(eventPublisher, never()).publishPrestamoEvent(any());
     }

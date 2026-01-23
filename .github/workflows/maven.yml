@@ -10,15 +10,13 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "paginacion" ]
+    branches: [ "paginacion", "main" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,8 +28,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn clean install
-
-      - name: Run tests
-        run: mvn test
+      - name: Build and run tests
+        # If your repo includes the Maven Wrapper, replace 'mvn' with './mvnw'
+        run: mvn -B clean verify
