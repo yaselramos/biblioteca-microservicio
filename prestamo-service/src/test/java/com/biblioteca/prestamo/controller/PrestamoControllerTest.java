@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -180,34 +179,74 @@ class PrestamoControllerTest {
 
     @Test
     @WithMockUser
-    void buscarPorId_existente_deberiaRetornar200YPrestamo() throws Exception {
+    void listarTodos_deberiaRetornar200YListaDeTodosPrestamos() throws Exception {
         // Arrange
-        Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(2));
-        prestamo.setId(1L);
+        Prestamo prestamo1 = new Prestamo(1L, "user1", LocalDate.now().minusDays(5));
+        prestamo1.setId(1L);
 
-        when(prestamoService.buscarPorId(1L)).thenReturn(Optional.of(prestamo));
+        Prestamo prestamo2 = new Prestamo(2L, "user2", LocalDate.now().minusDays(3));
+        prestamo2.setId(2L);
+
+        when(prestamoService.listarTodos()).thenReturn(Arrays.asList(prestamo1, prestamo2));
 
         // Act & Assert
-        mockMvc.perform(get("/prestamos/1"))
+        mockMvc.perform(get("/prestamos/todos"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.libroId").value(1));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2));
 
-        verify(prestamoService, times(1)).buscarPorId(1L);
+        verify(prestamoService, times(1)).listarTodos();
     }
 
     @Test
     @WithMockUser
-    void buscarPorId_noExistente_deberiaRetornar404() throws Exception {
+    void listarTodosPaginados_deberiaRetornar200YPaginaDeTodosPrestamos() throws Exception {
         // Arrange
-        when(prestamoService.buscarPorId(999L)).thenReturn(Optional.empty());
+        Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(2));
+        prestamo.setId(1L);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Prestamo> page = new PageImpl<>(Collections.singletonList(prestamo), pageable, 1);
+
+        when(prestamoService.obtenerPrestamosPaginados(any(Pageable.class))).thenReturn(page);
 
         // Act & Assert
-        mockMvc.perform(get("/prestamos/999"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/prestamos/todos/paginated")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1));
 
-        verify(prestamoService, times(1)).buscarPorId(999L);
+        verify(prestamoService, times(1)).obtenerPrestamosPaginados(any(Pageable.class));
+    }
+
+    @Test
+    @WithMockUser
+    void prestamosPorLibro_deberiaRetornar200YPaginaDePrestamos() throws Exception {
+        // Arrange
+        Prestamo prestamo = new Prestamo(1L, "testuser", LocalDate.now().minusDays(2));
+        prestamo.setId(1L);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Prestamo> page = new PageImpl<>(Collections.singletonList(prestamo), pageable, 1);
+
+        when(prestamoService.obtenerPrestamosPorLibro(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        // Act & Assert
+        mockMvc.perform(get("/prestamos/libro/1")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].libroId").value(1));
+
+        verify(prestamoService, times(1)).obtenerPrestamosPorLibro(eq(1L), any(Pageable.class));
     }
 }
+
