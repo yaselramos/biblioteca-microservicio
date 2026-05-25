@@ -1,9 +1,8 @@
 package com.biblioteca.auth.controller;
 
-import com.biblioteca.auth.entity.Usuario;
+import com.biblioteca.auth.dto.UsuarioDto;
 import com.biblioteca.auth.service.UsuarioService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,36 +16,36 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioService service;
-    @Autowired
-    private PasswordEncoder encoder;
 
-    public UsuarioController(UsuarioService service) {
+    private final PasswordEncoder encoder;
+
+    public UsuarioController(UsuarioService service, PasswordEncoder encoder) {
         this.service = service;
+        this.encoder = encoder;
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> crear(@Valid @RequestBody Usuario u) {
+    public ResponseEntity<UsuarioDto> crear(@Valid @RequestBody UsuarioDto u) {
         u.setPassword(encoder.encode(u.getPassword()));
-        Usuario guardado = service.guardar(u);
+        UsuarioDto guardado = service.guardar(u);
         return ResponseEntity.status(201).body(guardado);
     }
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> listar() {
-        List<Usuario> usuarios = service.listar();
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<List<UsuarioDto>> listar() {
+        return ResponseEntity.ok(service.listar());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioDto> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @Valid @RequestBody Usuario u) {
-        Usuario actualizado = service.actualizar(id, u);
+    public ResponseEntity<UsuarioDto> actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioDto u) {
+        UsuarioDto actualizado = service.actualizar(id, u);
         if (actualizado != null) {
             return ResponseEntity.ok(actualizado);
         }
@@ -61,4 +60,3 @@ public class UsuarioController {
         return ResponseEntity.notFound().build();
     }
 }
-

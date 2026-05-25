@@ -1,0 +1,13 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+auth-service,com.biblioteca.auth.dto,AuthRequest,0,9,0,0,0,1,0,1,0,1
+auth-service,com.biblioteca.auth.dto,AuthResponse,0,12,0,0,0,1,0,1,0,1
+auth-service,com.biblioteca.auth.dto,RegisterRequest,0,12,0,0,0,1,0,1,0,1
+auth-service,com.biblioteca.auth.exception,ResourceNotFoundExceptionAuth,0,9,0,0,0,4,0,2,0,2
+auth-service,com.biblioteca.auth.exception,GlobalExceptionHandlerAuth,0,3,0,0,0,1,0,1,0,1
+auth-service,com.biblioteca,AuthServiceApplication,0,8,0,0,0,3,0,2,0,2
+auth-service,com.biblioteca.auth.controller,AuthController,0,131,0,10,0,27,0,8,0,3
+auth-service,com.biblioteca.auth.controller,UsuarioController,0,67,0,4,0,18,0,8,0,6
+auth-service,com.biblioteca.auth.security,SecurityConfig,0,100,0,0,0,17,0,7,0,7
+auth-service,com.biblioteca.auth.service,JwtServiceAuth,0,3,0,0,0,1,0,1,0,1
+auth-service,com.biblioteca.auth.service,UsuarioService,0,115,0,8,0,28,0,12,0,8
+auth-service,com.biblioteca.auth.service,Rol,0,15,0,0,0,3,0,1,0,1

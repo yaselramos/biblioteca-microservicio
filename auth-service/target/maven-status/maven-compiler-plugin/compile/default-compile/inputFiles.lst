@@ -1,0 +1,15 @@
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/security/SecurityConfig.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/controller/UsuarioController.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/service/Rol.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/exception/ResourceNotFoundExceptionAuth.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/dto/AuthResponse.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/repository/UsuarioRepository.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/dto/UsuarioDto.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/dto/AuthRequest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/dto/RegisterRequest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/service/JwtServiceAuth.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/entity/Usuario.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/service/UsuarioService.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/exception/GlobalExceptionHandlerAuth.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/AuthServiceApplication.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/auth-service/src/main/java/com/biblioteca/auth/controller/AuthController.java

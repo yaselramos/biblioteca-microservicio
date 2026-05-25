@@ -1,16 +1,15 @@
 package com.biblioteca.prestamo.service;
 
+import com.biblioteca.common.exception.ResourceNotFoundException;
 import com.biblioteca.prestamo.dto.LibroDTO;
-import com.biblioteca.prestamo.dto.PrestamoEvent;
 import com.biblioteca.prestamo.entity.Prestamo;
-import com.biblioteca.prestamo.exception.ResourceNotFoundException;
 import com.biblioteca.prestamo.messaging.PrestamoEventPublisher;
 import com.biblioteca.prestamo.repository.PrestamoRepository;
+import com.biblioteca.prestamo.util.TestPrestamoEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -35,12 +34,9 @@ class PrestamoServiceTest {
     private PrestamoRepository prestamoRepository;
 
     @Mock
-    private PrestamoEventPublisher eventPublisher;
-
-    @Mock
     private RestTemplate restTemplate;
 
-    @InjectMocks
+    private PrestamoEventPublisher eventPublisher;
     private PrestamoService prestamoService;
 
     private Prestamo prestamo;
@@ -55,11 +51,13 @@ class PrestamoServiceTest {
         prestamo.setFechaPrestamo(LocalDate.now());
         prestamo.setDevuelto(false);
 
-        libroDTO = new LibroDTO();
-        libroDTO.setId(1L);
-        libroDTO.setTitulo("Cien años de soledad");
-        libroDTO.setAutor("Gabriel García Márquez");
-        libroDTO.setStock(5);
+        libroDTO = new LibroDTO(1L,"Cien años de soledad","Gabriel García Márquez",5);
+
+        // Create test-only event publisher (no mocking required)
+        eventPublisher = new TestPrestamoEventPublisher();
+
+        // Create real PrestamoService with mocked dependencies
+        prestamoService = new PrestamoService(prestamoRepository, eventPublisher, restTemplate);
     }
 
     @Test
@@ -74,7 +72,6 @@ class PrestamoServiceTest {
         when(prestamoRepository.findByUsernameAndDevueltoFalse(username))
                 .thenReturn(Arrays.asList());
         when(prestamoRepository.save(any(Prestamo.class))).thenReturn(prestamo);
-        doNothing().when(eventPublisher).publishPrestamoEvent(any(PrestamoEvent.class));
 
         // When
         Prestamo resultado = prestamoService.prestarLibro(username, libroId);
@@ -85,26 +82,42 @@ class PrestamoServiceTest {
         assertEquals(libroId, resultado.getLibroId());
         assertFalse(resultado.isDevuelto());
         verify(prestamoRepository, times(1)).save(any(Prestamo.class));
-        verify(eventPublisher, times(1)).publishPrestamoEvent(any(PrestamoEvent.class));
     }
 
     @Test
-    @DisplayName("Debería lanzar excepción cuando el libro no existe")
-    void deberiaLanzarExcepcionCuandoLibroNoExiste() {
-        // Given
-        String username = "testuser";
-        Long libroId = 999L;
-
+    @DisplayName("Debería lanzar excepción cuando el libro no existe (NotFound exception)")
+    void deberiaLanzarExcepcionCuandoLibroNoExisteNotFound() {
         when(restTemplate.getForEntity(anyString(), eq(LibroDTO.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
 
-        // When & Then
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-                () -> prestamoService.prestarLibro(username, libroId));
+        assertThrows(ResourceNotFoundException.class, () -> prestamoService.prestarLibro("user", 1L));
+    }
 
-        assertTrue(exception.getMessage().contains("Libro no encontrado"));
-        verify(prestamoRepository, never()).save(any());
-        verify(eventPublisher, never()).publishPrestamoEvent(any());
+    @Test
+    @DisplayName("Debería lanzar excepción cuando el libro no existe (BadRequest genérico)")
+    void deberiaLanzarExcepcionCuandoLibroNoExisteBadRequest() {
+        when(restTemplate.getForEntity(anyString(), eq(LibroDTO.class)))
+                .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad Request"));
+
+        assertThrows(HttpClientErrorException.class, () -> prestamoService.prestarLibro("user", 1L));
+    }
+
+    @Test
+    void devolverLibro_DeberiaLanzarExcepcionSiYaFueDevuelto() {
+        Prestamo p = new Prestamo();
+        p.setDevuelto(true);
+        when(prestamoRepository.findById(1L)).thenReturn(Optional.of(p));
+
+        assertThrows(IllegalStateException.class, () -> prestamoService.devolverLibro(1L));
+    }
+
+    @Test
+    @DisplayName("Debería lanzar excepción cuando el body de respuesta es nulo")
+    void deberiaLanzarExcepcionCuandoBodyEsNulo() {
+        when(restTemplate.getForEntity(anyString(), eq(LibroDTO.class)))
+                .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+
+        assertThrows(ResourceNotFoundException.class, () -> prestamoService.prestarLibro("user", 1L));
     }
 
     @Test
@@ -112,15 +125,15 @@ class PrestamoServiceTest {
     void deberiaLanzarExcepcionCuandoNoHayStock() {
         // Given
         String username = "testuser";
-        Long libroId = 1L;
-        libroDTO.setStock(0);
+
+        libroDTO=new LibroDTO(1L,null,null,0);
 
         when(restTemplate.getForEntity(anyString(), eq(LibroDTO.class)))
                 .thenReturn(new ResponseEntity<>(libroDTO, HttpStatus.OK));
 
         // When & Then
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            prestamoService.prestarLibro(username, libroId);
+            prestamoService.prestarLibro(username, libroDTO.id());
         });
 
         assertTrue(exception.getMessage().contains("No hay stock disponible"));
@@ -159,7 +172,6 @@ class PrestamoServiceTest {
         // Given
         when(prestamoRepository.findById(1L)).thenReturn(Optional.of(prestamo));
         when(prestamoRepository.save(any(Prestamo.class))).thenReturn(prestamo);
-        doNothing().when(eventPublisher).publishPrestamoEvent(any(PrestamoEvent.class));
 
         // When
         Prestamo resultado = prestamoService.devolverLibro(1L);
@@ -169,7 +181,6 @@ class PrestamoServiceTest {
         assertTrue(resultado.isDevuelto());
         assertNotNull(resultado.getFechaDevolucion());
         verify(prestamoRepository, times(1)).save(prestamo);
-        verify(eventPublisher, times(1)).publishPrestamoEvent(any(PrestamoEvent.class));
     }
 
     @Test

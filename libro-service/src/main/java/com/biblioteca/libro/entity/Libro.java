@@ -5,6 +5,10 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Entidad Libro optimizada con estrategias de carga
@@ -20,6 +24,10 @@ import jakarta.validation.constraints.Size;
     @Index(name = "idx_libro_autor", columnList = "autor"),
     @Index(name = "idx_libro_stock", columnList = "stock")
 })
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Libro {
 
     @Id
@@ -41,48 +49,6 @@ public class Libro {
     @Column(name = "stock", nullable = false)
     private Integer stock;
 
-    // Constructor vacío requerido por JPA
-    public Libro() {
-    }
 
-    // Constructor con parámetros para facilitar creación
-    public Libro(String titulo, String autor, Integer stock) {
-        this.titulo = titulo;
-        this.autor = autor;
-        this.stock = stock;
-    }
-
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public String getAutor() {
-        return autor;
-    }
-
-    public void setAutor(String autor) {
-        this.autor = autor;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
 }
 

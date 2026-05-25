@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LibroService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">libro-service</a> &gt; <a href="index.source.html" class="el_package">com.biblioteca.libro.service</a> &gt; <span class="el_source">LibroService.java</span></div><h1>LibroService.java</h1><pre class="source lang-java linenums">package com.biblioteca.libro.service;
+
+import com.biblioteca.libro.dto.LibroDto;
+import com.biblioteca.libro.entity.Libro;
+import com.biblioteca.libro.repository.LibroRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Servicio de libros con caché optimizado y paginación
+ * Utiliza Spring Cache para reducir consultas a la base de datos
+ */
+@Service
+public class LibroService {
+
+    private final LibroRepository repo;
+
+<span class="fc" id="L26">    public LibroService(LibroRepository repo) {</span>
+<span class="fc" id="L27">        this.repo = repo;</span>
+<span class="fc" id="L28">    }</span>
+
+    /**
+     * Guarda un libro y actualiza la caché
+     * @CachePut actualiza la caché con el libro guardado
+     * @CacheEvict invalida la lista de libros
+     */
+    @Caching(
+        put = @CachePut(value = &quot;libro&quot;, key = &quot;#result.id&quot;),
+        evict = @CacheEvict(value = &quot;libros&quot;, allEntries = true)
+    )
+    public Libro guardar(LibroDto l) {
+<span class="fc" id="L40">        Libro libro = new Libro();</span>
+<span class="fc" id="L41">        libro.setId(l.id());</span>
+<span class="fc" id="L42">        libro.setTitulo(l.titulo());</span>
+<span class="fc" id="L43">        libro.setAutor(l.autor());</span>
+<span class="fc" id="L44">        libro.setStock(l.stock());</span>
+<span class="fc" id="L45">        return repo.save(libro);</span>
+    }
+
+    /**
+     * Lista todos los libros con caché
+     * Los resultados se cachean por 30 minutos
+     */
+    @Cacheable(value = &quot;libros&quot;)
+    public List&lt;Libro&gt; listar() {
+<span class="fc" id="L54">        return repo.findAll();</span>
+    }
+
+    /**
+     * Busca un libro por ID con caché
+     * Solo cachea si el libro existe
+     */
+    @Cacheable(value = &quot;libro&quot;, key = &quot;#id&quot;, unless = &quot;#result.isEmpty()&quot;)
+    public Optional&lt;Libro&gt; buscarPorId(Long id) {
+<span class="fc" id="L63">        return repo.findById(id);</span>
+    }
+
+    /**
+     * Actualiza un libro y su caché
+     * Invalida la lista general de libros
+     */
+    @Caching(
+        put = @CachePut(value = &quot;libro&quot;, key = &quot;#id&quot;),
+        evict = @CacheEvict(value = &quot;libros&quot;, allEntries = true)
+    )
+    public Libro actualizar(Long id, LibroDto l) {
+<span class="fc" id="L75">        return repo.findById(id)</span>
+<span class="fc" id="L76">                .map(existente -&gt; {</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">                    if (l.titulo() != null) {</span>
+<span class="fc" id="L78">                        existente.setTitulo(l.titulo());</span>
+                    }
+<span class="fc bfc" id="L80" title="All 2 branches covered.">                    if (l.autor() != null) {</span>
+<span class="fc" id="L81">                        existente.setAutor(l.autor());</span>
+                    }
+<span class="fc bfc" id="L83" title="All 2 branches covered.">                    if (l.stock() != null) {</span>
+<span class="fc" id="L84">                        existente.setStock(l.stock());</span>
+                    }
+<span class="fc" id="L86">                    return repo.save(existente);</span>
+                })
+<span class="fc" id="L88">                .orElse(null);</span>
+    }
+
+    /**
+     * Elimina un libro e invalida sus cachés
+     */
+    @Caching(evict = {
+        @CacheEvict(value = &quot;libro&quot;, key = &quot;#id&quot;),
+        @CacheEvict(value = &quot;libros&quot;, allEntries = true),
+        @CacheEvict(value = &quot;librosDisponibles&quot;, allEntries = true)
+    })
+    public boolean eliminar(Long id) {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (repo.existsById(id)) {</span>
+<span class="fc" id="L101">            repo.deleteById(id);</span>
+<span class="fc" id="L102">            return true;</span>
+        }
+<span class="fc" id="L104">        return false;</span>
+    }
+
+    /**
+     * Decrementa el stock e invalida las cachés relacionadas
+     * El stock cambia frecuentemente, por lo que invalidamos la caché
+     */
+    @Caching(evict = {
+        @CacheEvict(value = &quot;libro&quot;, key = &quot;#libroId&quot;),
+        @CacheEvict(value = &quot;libros&quot;, allEntries = true),
+        @CacheEvict(value = &quot;librosDisponibles&quot;, allEntries = true)
+    })
+    public void decrementarStock(Long libroId) {
+<span class="fc" id="L117">        repo.findById(libroId).ifPresent(libro -&gt; {</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (libro.getStock() &gt; 0) {</span>
+<span class="fc" id="L119">                libro.setStock(libro.getStock() - 1);</span>
+<span class="fc" id="L120">                repo.save(libro);</span>
+            } else {
+<span class="fc" id="L122">                throw new RuntimeException(&quot;No hay stock disponible para el libro ID: &quot; + libroId);</span>
+            }
+<span class="fc" id="L124">        });</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Incrementa el stock e invalida las cachés relacionadas
+     */
+    @Caching(evict = {
+        @CacheEvict(value = &quot;libro&quot;, key = &quot;#libroId&quot;),
+        @CacheEvict(value = &quot;libros&quot;, allEntries = true),
+        @CacheEvict(value = &quot;librosDisponibles&quot;, allEntries = true)
+    })
+    public void incrementarStock(Long libroId) {
+<span class="fc" id="L136">        repo.findById(libroId).ifPresent(libro -&gt; {</span>
+<span class="fc" id="L137">            libro.setStock(libro.getStock() + 1);</span>
+<span class="fc" id="L138">            repo.save(libro);</span>
+<span class="fc" id="L139">        });</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Verifica stock con caché temporal
+     * Cachea solo resultados positivos (con stock)
+     */
+    @Cacheable(value = &quot;librosDisponibles&quot;, key = &quot;#libroId&quot;, unless = &quot;#result == false&quot;)
+    public boolean verificarStock(Long libroId) {
+<span class="fc" id="L148">        return repo.findById(libroId)</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">                .map(libro -&gt; libro.getStock() &gt; 0)</span>
+<span class="fc" id="L150">                .orElse(false);</span>
+    }
+
+    // ========== MÉTODOS CON PAGINACIÓN ==========
+
+    /**
+     * Lista libros con paginación
+     * Más eficiente para grandes volúmenes de datos
+     *
+     * @param pageable configuración de paginación (página, tamaño, ordenamiento)
+     * @return Page con libros y metadatos de paginación
+     */
+    @Cacheable(value = &quot;librosPaginados&quot;, key = &quot;#pageable.pageNumber + '_' + #pageable.pageSize&quot;)
+    public Page&lt;Libro&gt; listarPaginado(Pageable pageable) {
+<span class="fc" id="L164">        return repo.findAll(pageable);</span>
+    }
+
+    /**
+     * Buscar libros por título con paginación
+     */
+    @Cacheable(value = &quot;librosPorTitulo&quot;, key = &quot;#titulo + '_' + #pageable.pageNumber&quot;)
+    public Page&lt;Libro&gt; buscarPorTitulo(String titulo, Pageable pageable) {
+<span class="fc" id="L172">        return repo.findByTituloContainingIgnoreCase(titulo, pageable);</span>
+    }
+
+    /**
+     * Buscar libros por autor con paginación
+     */
+    @Cacheable(value = &quot;librosPorAutor&quot;, key = &quot;#autor + '_' + #pageable.pageNumber&quot;)
+    public Page&lt;Libro&gt; buscarPorAutor(String autor, Pageable pageable) {
+<span class="fc" id="L180">        return repo.findByAutorContainingIgnoreCase(autor, pageable);</span>
+    }
+
+    /**
+     * Obtener libros disponibles (con stock) con paginación
+     */
+    @Cacheable(value = &quot;librosDisponiblesPaginados&quot;, key = &quot;#pageable.pageNumber&quot;)
+    public Page&lt;Libro&gt; obtenerLibrosDisponibles(Pageable pageable) {
+<span class="fc" id="L188">        return repo.findLibrosDisponibles(pageable);</span>
+    }
+
+    /**
+     * Buscar por título o autor con paginación
+     * Búsqueda flexible para el frontend
+     */
+    @Cacheable(value = &quot;busquedaLibros&quot;, key = &quot;#searchTerm + '_' + #pageable.pageNumber&quot;)
+    public Page&lt;Libro&gt; buscar(String searchTerm, Pageable pageable) {
+<span class="fc" id="L197">        return repo.buscarPorTituloOAutor(searchTerm, pageable);</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

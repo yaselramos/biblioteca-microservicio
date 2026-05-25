@@ -1,0 +1,11 @@
+com/biblioteca/libro/config/CacheConfig.class
+com/biblioteca/LibroServiceApplication.class
+com/biblioteca/libro/dto/LibroDto.class
+com/biblioteca/libro/config/SecurityConfig.class
+com/biblioteca/libro/entity/Libro.class
+com/biblioteca/libro/entity/Libro$LibroBuilder.class
+com/biblioteca/libro/controller/LibroController.class
+com/biblioteca/libro/repository/LibroRepository.class
+com/biblioteca/libro/service/LibroService.class
+com/biblioteca/libro/messaging/PrestamoEventListener.class
+com/biblioteca/libro/messaging/PrestamoEventListener$1.class

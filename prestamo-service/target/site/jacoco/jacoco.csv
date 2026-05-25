@@ -1,0 +1,11 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+prestamo-service,com.biblioteca.prestamo.entity,Prestamo,0,46,0,0,0,16,0,3,0,3
+prestamo-service,com.biblioteca,PrestamoServiceApplication,0,8,0,0,0,3,0,2,0,2
+prestamo-service,com.biblioteca.prestamo.messaging,PrestamoEventPublisher,0,37,0,0,0,12,0,3,0,3
+prestamo-service,com.biblioteca.prestamo.exception,BusinessException,0,4,0,0,0,2,0,1,0,1
+prestamo-service,com.biblioteca.prestamo.service,PrestamoService,7,239,0,10,2,60,0,21,0,16
+prestamo-service,com.biblioteca.prestamo.dto,LibroDTO,0,15,0,0,0,1,0,1,0,1
+prestamo-service,com.biblioteca.prestamo.config,CacheConfig,0,42,0,0,0,9,0,3,0,3
+prestamo-service,com.biblioteca.prestamo.config,RestTemplateConfig,0,7,0,0,0,2,0,2,0,2
+prestamo-service,com.biblioteca.prestamo.config,SecurityConfig,0,64,0,0,0,13,0,6,0,6
+prestamo-service,com.biblioteca.prestamo.controller,PrestamoController,0,239,0,4,0,49,0,16,0,14

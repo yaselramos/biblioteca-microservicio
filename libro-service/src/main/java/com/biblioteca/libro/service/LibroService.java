@@ -1,5 +1,6 @@
 package com.biblioteca.libro.service;
 
+import com.biblioteca.libro.dto.LibroDto;
 import com.biblioteca.libro.entity.Libro;
 import com.biblioteca.libro.repository.LibroRepository;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,8 +36,13 @@ public class LibroService {
         put = @CachePut(value = "libro", key = "#result.id"),
         evict = @CacheEvict(value = "libros", allEntries = true)
     )
-    public Libro guardar(Libro l) {
-        return repo.save(l);
+    public Libro guardar(LibroDto l) {
+        Libro libro = new Libro();
+        libro.setId(l.id());
+        libro.setTitulo(l.titulo());
+        libro.setAutor(l.autor());
+        libro.setStock(l.stock());
+        return repo.save(libro);
     }
 
     /**
@@ -65,17 +71,17 @@ public class LibroService {
         put = @CachePut(value = "libro", key = "#id"),
         evict = @CacheEvict(value = "libros", allEntries = true)
     )
-    public Libro actualizar(Long id, Libro l) {
+    public Libro actualizar(Long id, LibroDto l) {
         return repo.findById(id)
                 .map(existente -> {
-                    if (l.getTitulo() != null) {
-                        existente.setTitulo(l.getTitulo());
+                    if (l.titulo() != null) {
+                        existente.setTitulo(l.titulo());
                     }
-                    if (l.getAutor() != null) {
-                        existente.setAutor(l.getAutor());
+                    if (l.autor() != null) {
+                        existente.setAutor(l.autor());
                     }
-                    if (l.getStock() != null) {
-                        existente.setStock(l.getStock());
+                    if (l.stock() != null) {
+                        existente.setStock(l.stock());
                     }
                     return repo.save(existente);
                 })

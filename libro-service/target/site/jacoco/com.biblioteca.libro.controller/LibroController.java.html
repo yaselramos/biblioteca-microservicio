@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LibroController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">libro-service</a> &gt; <a href="index.source.html" class="el_package">com.biblioteca.libro.controller</a> &gt; <span class="el_source">LibroController.java</span></div><h1>LibroController.java</h1><pre class="source lang-java linenums">package com.biblioteca.libro.controller;
+
+import com.biblioteca.libro.dto.LibroDto;
+import com.biblioteca.libro.entity.Libro;
+import com.biblioteca.libro.service.LibroService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * Controlador de Libros con soporte de paginación
+ */
+@RestController
+@RequestMapping(&quot;/libros&quot;)
+@Tag(name = &quot;Libros&quot;, description = &quot;API de gestión de libros con paginación&quot;)
+public class LibroController {
+
+    private final LibroService service;
+
+<span class="fc" id="L29">    public LibroController(LibroService service) {</span>
+<span class="fc" id="L30">        this.service = service;</span>
+<span class="fc" id="L31">    }</span>
+
+    @PostMapping
+    @Operation(summary = &quot;Crear un nuevo libro&quot;)
+    public ResponseEntity&lt;Libro&gt; crear(@Valid @RequestBody LibroDto l) {
+<span class="fc" id="L36">        Libro guardado = service.guardar(l);</span>
+<span class="fc" id="L37">        return ResponseEntity.status(201).body(guardado);</span>
+    }
+
+    /**
+     * Listar todos los libros SIN paginación (mantener compatibilidad)
+     * Para datasets pequeños o clientes que no soporten paginación
+     */
+    @GetMapping
+    @Operation(summary = &quot;Listar todos los libros (sin paginación)&quot;)
+    public ResponseEntity&lt;List&lt;Libro&gt;&gt; listar() {
+<span class="fc" id="L47">        List&lt;Libro&gt; libros = service.listar();</span>
+<span class="fc" id="L48">        return ResponseEntity.ok(libros);</span>
+    }
+
+    /**
+     * Listar libros CON paginación (RECOMENDADO)
+     * Ejemplo: GET /libros/paginated?page=0&amp;size=10&amp;sort=titulo,asc
+     */
+    @GetMapping(&quot;/paginated&quot;)
+    @Operation(summary = &quot;Listar libros con paginación (RECOMENDADO para grandes datasets)&quot;)
+    public ResponseEntity&lt;Page&lt;Libro&gt;&gt; listarPaginado(
+            @Parameter(description = &quot;Número de página (empezando en 0)&quot;)
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+
+            @Parameter(description = &quot;Tamaño de página&quot;)
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+
+            @Parameter(description = &quot;Campo de ordenamiento (ej: titulo, autor, stock)&quot;)
+            @RequestParam(defaultValue = &quot;id&quot;) String sortBy,
+
+            @Parameter(description = &quot;Dirección de ordenamiento (asc o desc)&quot;)
+            @RequestParam(defaultValue = &quot;asc&quot;) String direction
+    ) {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        Sort.Direction sortDirection = direction.equalsIgnoreCase(&quot;desc&quot;)</span>
+<span class="fc" id="L71">            ? Sort.Direction.DESC</span>
+<span class="fc" id="L72">            : Sort.Direction.ASC;</span>
+
+<span class="fc" id="L74">        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));</span>
+<span class="fc" id="L75">        Page&lt;Libro&gt; libros = service.listarPaginado(pageable);</span>
+
+<span class="fc" id="L77">        return ResponseEntity.ok(libros);</span>
+    }
+
+    /**
+     * Buscar libros por título con paginación
+     * Ejemplo: GET /libros/search/titulo?q=Java&amp;page=0&amp;size=10
+     */
+    @GetMapping(&quot;/search/titulo&quot;)
+    @Operation(summary = &quot;Buscar libros por título con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Libro&gt;&gt; buscarPorTitulo(
+            @Parameter(description = &quot;Término de búsqueda en el título&quot;)
+            @RequestParam String q,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L92">        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;titulo&quot;));</span>
+<span class="fc" id="L93">        Page&lt;Libro&gt; libros = service.buscarPorTitulo(q, pageable);</span>
+<span class="fc" id="L94">        return ResponseEntity.ok(libros);</span>
+    }
+
+    /**
+     * Buscar libros por autor con paginación
+     */
+    @GetMapping(&quot;/search/autor&quot;)
+    @Operation(summary = &quot;Buscar libros por autor con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Libro&gt;&gt; buscarPorAutor(
+            @Parameter(description = &quot;Término de búsqueda en el autor&quot;)
+            @RequestParam String q,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L108">        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;autor&quot;));</span>
+<span class="fc" id="L109">        Page&lt;Libro&gt; libros = service.buscarPorAutor(q, pageable);</span>
+<span class="fc" id="L110">        return ResponseEntity.ok(libros);</span>
+    }
+
+    /**
+     * Búsqueda general (título o autor) con paginación
+     * Ejemplo: GET /libros/search?q=spring&amp;page=0&amp;size=10
+     */
+    @GetMapping(&quot;/search&quot;)
+    @Operation(summary = &quot;Búsqueda general en título y autor con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Libro&gt;&gt; buscar(
+            @Parameter(description = &quot;Término de búsqueda&quot;)
+            @RequestParam String q,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L125">        Pageable pageable = PageRequest.of(page, size);</span>
+<span class="fc" id="L126">        Page&lt;Libro&gt; libros = service.buscar(q, pageable);</span>
+<span class="fc" id="L127">        return ResponseEntity.ok(libros);</span>
+    }
+
+    /**
+     * Obtener libros disponibles (con stock) con paginación
+     */
+    @GetMapping(&quot;/disponibles&quot;)
+    @Operation(summary = &quot;Obtener libros con stock disponible&quot;)
+    public ResponseEntity&lt;Page&lt;Libro&gt;&gt; obtenerDisponibles(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L139">        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;titulo&quot;));</span>
+<span class="fc" id="L140">        Page&lt;Libro&gt; libros = service.obtenerLibrosDisponibles(pageable);</span>
+<span class="fc" id="L141">        return ResponseEntity.ok(libros);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Buscar libro por ID&quot;)
+    public ResponseEntity&lt;Libro&gt; buscarPorId(@PathVariable Long id) {
+<span class="fc" id="L147">        return service.buscarPorId(id)</span>
+<span class="fc" id="L148">                .map(ResponseEntity::ok)</span>
+<span class="fc" id="L149">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Actualizar un libro&quot;)
+    public ResponseEntity&lt;Libro&gt; actualizar(@PathVariable Long id, @Valid @RequestBody LibroDto l) {
+<span class="fc" id="L155">        Libro actualizado = service.actualizar(id, l);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (actualizado != null) {</span>
+<span class="fc" id="L157">            return ResponseEntity.ok(actualizado);</span>
+        }
+<span class="fc" id="L159">        return ResponseEntity.notFound().build();</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Eliminar un libro&quot;)
+    public ResponseEntity&lt;Void&gt; eliminar(@PathVariable Long id) {
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (service.eliminar(id)) {</span>
+<span class="fc" id="L166">            return ResponseEntity.noContent().build();</span>
+        }
+<span class="fc" id="L168">        return ResponseEntity.notFound().build();</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

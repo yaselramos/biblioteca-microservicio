@@ -1,0 +1,11 @@
+com/biblioteca/common/dto/ErrorResponse.class
+com/biblioteca/common/config/RabbitMQConfig.class
+com/biblioteca/common/dto/PrestamoEvent$PrestamoEventBuilder.class
+com/biblioteca/common/config/SwaggerConfig.class
+com/biblioteca/common/security/JwtFilter.class
+com/biblioteca/common/security/JwtService.class
+com/biblioteca/common/dto/PrestamoEvent$EventType.class
+com/biblioteca/common/exception/ResourceNotFoundException.class
+com/biblioteca/common/exception/GlobalExceptionHandler.class
+com/biblioteca/common/dto/PrestamoEvent.class
+com/biblioteca/common/config/CorsConfig.class

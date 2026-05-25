@@ -1,6 +1,8 @@
 package com.biblioteca.prestamo.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
 
 /**
@@ -19,6 +21,9 @@ import java.time.LocalDate;
     @Index(name = "idx_prestamo_devuelto", columnList = "devuelto"),
     @Index(name = "idx_prestamo_usuario_activo", columnList = "username, devuelto")
 })
+@Getter
+@Setter
+@Builder
 public class Prestamo {
 
     @Id
@@ -40,64 +45,22 @@ public class Prestamo {
     @Column(name = "devuelto", nullable = false)
     private boolean devuelto = false;
 
-    // Constructor vacío requerido por JPA
     public Prestamo() {
+
     }
 
-    // Constructor con parámetros para facilitar creación
-    public Prestamo(Long libroId, String username, LocalDate fechaPrestamo) {
-        this.libroId = libroId;
-        this.username = username;
-        this.fechaPrestamo = fechaPrestamo;
-        this.devuelto = false;
-    }
-
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
+    public Prestamo(Long id, Long libroId, String username, LocalDate fechaPrestamo, LocalDate fechaDevolucion, boolean devuelto) {
         this.id = id;
-    }
-
-    public Long getLibroId() {
-        return libroId;
-    }
-
-    public void setLibroId(Long libroId) {
         this.libroId = libroId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
         this.username = username;
-    }
-
-    public LocalDate getFechaPrestamo() {
-        return fechaPrestamo;
-    }
-
-    public void setFechaPrestamo(LocalDate fechaPrestamo) {
         this.fechaPrestamo = fechaPrestamo;
-    }
-
-    public LocalDate getFechaDevolucion() {
-        return fechaDevolucion;
-    }
-
-    public void setFechaDevolucion(LocalDate fechaDevolucion) {
         this.fechaDevolucion = fechaDevolucion;
-    }
-
-    public boolean isDevuelto() {
-        return devuelto;
-    }
-
-    public void setDevuelto(boolean devuelto) {
         this.devuelto = devuelto;
+    }
+
+    public Prestamo(long l, String testuser, LocalDate now) {
+        this.libroId = l;
+        this.username = testuser;
+        this.fechaPrestamo = now;
     }
 }

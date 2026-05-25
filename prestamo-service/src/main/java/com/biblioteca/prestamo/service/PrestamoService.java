@@ -1,14 +1,12 @@
 package com.biblioteca.prestamo.service;
 
+import com.biblioteca.common.dto.PrestamoEvent;
+import com.biblioteca.common.exception.ResourceNotFoundException;
 import com.biblioteca.prestamo.dto.LibroDTO;
-import com.biblioteca.prestamo.dto.PrestamoEvent;
 import com.biblioteca.prestamo.entity.Prestamo;
-import com.biblioteca.prestamo.exception.ResourceNotFoundException;
 import com.biblioteca.prestamo.messaging.PrestamoEventPublisher;
 import com.biblioteca.prestamo.repository.PrestamoRepository;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -57,9 +55,9 @@ public class PrestamoService {
                 throw new ResourceNotFoundException("Libro no encontrado: " + libroId);
             }
 
-            if (libro.getStock() <= 0) {
+            if (libro.stock() <= 0) {
                 throw new IllegalStateException(
-                    "No hay stock disponible para el libro: " + libro.getTitulo()
+                    "No hay stock disponible para el libro: " + libro.titulo()
                 );
             }
 

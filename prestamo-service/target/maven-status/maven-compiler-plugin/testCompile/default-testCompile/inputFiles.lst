@@ -1,0 +1,11 @@
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/controller/PrestamoControllerTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/exception/BusinessExceptionTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/PrestamoServiceApplicationTests.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/controller/PrestamoControllerExtendedTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/repository/PrestamoRepositoryTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/util/TestPrestamoEventPublisher.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/config/TechConfigTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/entity/PrestamoTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/service/PrestamoServiceTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/service/PrestamoServicePaginationTest.java
+/Users/familia/Desktop/spring/biblioteca-microservicios/prestamo-service/src/test/java/com/biblioteca/prestamo/messaging/PrestamoEventPublisherTest.java

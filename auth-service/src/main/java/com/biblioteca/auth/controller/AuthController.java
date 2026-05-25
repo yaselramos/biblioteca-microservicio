@@ -5,10 +5,9 @@ import com.biblioteca.auth.dto.AuthResponse;
 import com.biblioteca.auth.dto.RegisterRequest;
 import com.biblioteca.auth.entity.Usuario;
 import com.biblioteca.auth.repository.UsuarioRepository;
-import com.biblioteca.auth.service.JwtService;
 import com.biblioteca.auth.service.Rol;
+import com.biblioteca.common.security.JwtService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,14 +19,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private PasswordEncoder encoder;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private JwtService jwtService;
+
+    private final PasswordEncoder encoder;
+
+
+    private final JwtService jwtService;
+
+    public AuthController(UsuarioRepository usuarioRepository, PasswordEncoder encoder, JwtService jwtService) {
+        this.usuarioRepository = usuarioRepository;
+        this.encoder = encoder;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request) {

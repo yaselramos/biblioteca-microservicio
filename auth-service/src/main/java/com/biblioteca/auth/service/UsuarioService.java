@@ -1,5 +1,6 @@
 package com.biblioteca.auth.service;
 
+import com.biblioteca.auth.dto.UsuarioDto;
 import com.biblioteca.auth.entity.Usuario;
 import com.biblioteca.auth.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -16,23 +17,30 @@ public class UsuarioService {
         this.repo = repo;
     }
 
-    public Usuario guardar(Usuario u) {
-        return repo.save(u);
+    public UsuarioDto guardar(UsuarioDto u) {
+        Usuario user = new Usuario();
+        user.setUsername(u.getUsuario());
+        user.setPassword(u.getPassword());
+        user.setRol(u.getRol());
+        Usuario persistido = repo.save(user);
+        return toDto(persistido);
     }
 
-    public List<Usuario> listar() {
-        return repo.findAll();
+    public List<UsuarioDto> listar() {
+        return repo.findAll().stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    public Optional<Usuario> buscarPorId(Long id) {
-        return repo.findById(id);
+    public Optional<UsuarioDto> buscarPorId(Long id) {
+        return repo.findById(id).map(this::toDto);
     }
 
-    public Usuario actualizar(Long id, Usuario u) {
+    public UsuarioDto actualizar(Long id, UsuarioDto u) {
         return repo.findById(id)
                 .map(existente -> {
-                    if (u.getUsername() != null) {
-                        existente.setUsername(u.getUsername());
+                    if (u.getUsuario() != null) {
+                        existente.setUsername(u.getUsuario());
                     }
                     if (u.getPassword() != null) {
                         existente.setPassword(u.getPassword());
@@ -40,7 +48,7 @@ public class UsuarioService {
                     if (u.getRol() != null) {
                         existente.setRol(u.getRol());
                     }
-                    return repo.save(existente);
+                    return toDto(repo.save(existente));
                 })
                 .orElse(null);
     }
@@ -51,5 +59,9 @@ public class UsuarioService {
             return true;
         }
         return false;
+    }
+
+    private UsuarioDto toDto(Usuario user) {
+        return new UsuarioDto(user.getId(), user.getUsername(), user.getPassword(), user.getRol());
     }
 }

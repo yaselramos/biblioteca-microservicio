@@ -1,5 +1,6 @@
 package com.biblioteca.libro.controller;
 
+import com.biblioteca.libro.dto.LibroDto;
 import com.biblioteca.libro.entity.Libro;
 import com.biblioteca.libro.service.LibroService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +32,7 @@ public class LibroController {
 
     @PostMapping
     @Operation(summary = "Crear un nuevo libro")
-    public ResponseEntity<Libro> crear(@Valid @RequestBody Libro l) {
+    public ResponseEntity<Libro> crear(@Valid @RequestBody LibroDto l) {
         Libro guardado = service.guardar(l);
         return ResponseEntity.status(201).body(guardado);
     }
@@ -150,7 +151,7 @@ public class LibroController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar un libro")
-    public ResponseEntity<Libro> actualizar(@PathVariable Long id, @Valid @RequestBody Libro l) {
+    public ResponseEntity<Libro> actualizar(@PathVariable Long id, @Valid @RequestBody LibroDto l) {
         Libro actualizado = service.actualizar(id, l);
         if (actualizado != null) {
             return ResponseEntity.ok(actualizado);
