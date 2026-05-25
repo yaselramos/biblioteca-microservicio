@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.biblioteca.common.config.RabbitMQConfigTest
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.139 s -- in com.biblioteca.common.config.RabbitMQConfigTest

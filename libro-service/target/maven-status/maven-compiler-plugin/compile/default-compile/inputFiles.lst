@@ -1,9 +1,0 @@
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/repository/LibroRepository.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/LibroServiceApplication.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/dto/LibroDto.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/config/SecurityConfig.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/controller/LibroController.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/entity/Libro.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/messaging/PrestamoEventListener.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/config/CacheConfig.java
-/Users/familia/Desktop/spring/biblioteca-microservicios/libro-service/src/main/java/com/biblioteca/libro/service/LibroService.java
