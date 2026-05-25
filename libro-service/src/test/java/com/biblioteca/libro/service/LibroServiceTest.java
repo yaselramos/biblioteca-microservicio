@@ -1,5 +1,6 @@
 package com.biblioteca.libro.service;
 
+import com.biblioteca.libro.dto.LibroDto;
 import com.biblioteca.libro.entity.Libro;
 import com.biblioteca.libro.repository.LibroRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,16 +47,17 @@ class LibroServiceTest {
     @DisplayName("Debería guardar un libro exitosamente")
     void deberiaGuardarLibroExitosamente() {
         // Given
+        LibroDto dto = new LibroDto(1L, "Cien años de soledad", "Gabriel García Márquez", 5);
         when(libroRepository.save(any(Libro.class))).thenReturn(libro);
 
         // When
-        Libro resultado = libroService.guardar(libro);
+        Libro resultado = libroService.guardar(dto);
 
         // Then
         assertNotNull(resultado);
         assertEquals("Cien años de soledad", resultado.getTitulo());
         assertEquals(5, resultado.getStock());
-        verify(libroRepository, times(1)).save(libro);
+        verify(libroRepository, times(1)).save(any(Libro.class));
     }
 
     @Test
@@ -172,10 +177,7 @@ class LibroServiceTest {
     @DisplayName("Debería actualizar libro exitosamente")
     void deberiaActualizarLibroExitosamente() {
         // Given
-        Libro libroActualizado = new Libro();
-        libroActualizado.setTitulo("Título Actualizado");
-        libroActualizado.setAutor("Autor Actualizado");
-        libroActualizado.setStock(10);
+        LibroDto libroActualizado = new LibroDto(1L, "Título Actualizado", "Autor Actualizado", 10);
 
         when(libroRepository.findById(1L)).thenReturn(Optional.of(libro));
         when(libroRepository.save(any(Libro.class))).thenReturn(libro);
@@ -204,6 +206,56 @@ class LibroServiceTest {
         // Then
         assertTrue(resultado);
         verify(libroRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void actualizar_DeberiaActualizarSoloCamposNoNulos() {
+        // Test cada campo
+        when(libroRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        // Solo titulo
+        when(libroRepository.findById(1L)).thenReturn(Optional.of(new Libro(1L, "T", "A", 1)));
+        assertEquals("newT", libroService.actualizar(1L, new LibroDto(1L, "newT", null, null)).getTitulo());
+        
+        // Solo autor
+        when(libroRepository.findById(1L)).thenReturn(Optional.of(new Libro(1L, "T", "A", 1)));
+        assertEquals("newA", libroService.actualizar(1L, new LibroDto(1L, null, "newA", null)).getAutor());
+        
+        // Solo stock
+        when(libroRepository.findById(1L)).thenReturn(Optional.of(new Libro(1L, "T", "A", 1)));
+        assertEquals(99, libroService.actualizar(1L, new LibroDto(1L, null, null, 99)).getStock());
+    }
+
+    @Test
+    void actualizar_DeberiaRetornarNullSiNoExiste() {
+        when(libroRepository.findById(1L)).thenReturn(Optional.empty());
+        assertNull(libroService.actualizar(1L, new LibroDto(1L, "T", "A", 1)));
+    }
+
+    @Test
+    void eliminar_DeberiaRetornarFalseSiNoExiste() {
+        when(libroRepository.existsById(1L)).thenReturn(false);
+        assertFalse(libroService.eliminar(1L));
+    }
+
+    @Test
+    void buscar_DeberiaLlamarRepo() {
+        when(libroRepository.buscarPorTituloOAutor(anyString(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        libroService.buscar("query", PageRequest.of(0, 10));
+        verify(libroRepository).buscarPorTituloOAutor("query", PageRequest.of(0, 10));
+    }
+
+    @Test
+    void obtenerLibrosDisponibles_DeberiaLlamarRepo() {
+        when(libroRepository.findLibrosDisponibles(any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        libroService.obtenerLibrosDisponibles(PageRequest.of(0, 10));
+        verify(libroRepository).findLibrosDisponibles(PageRequest.of(0, 10));
+    }
+
+    @Test
+    void verificarStock_DeberiaRetornarFalseSiNoExiste() {
+        when(libroRepository.findById(1L)).thenReturn(Optional.empty());
+        assertFalse(libroService.verificarStock(1L));
     }
 }
 

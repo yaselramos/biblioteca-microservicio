@@ -1,0 +1,12 @@
+com/biblioteca/prestamo/dto/LibroDTO.class
+com/biblioteca/PrestamoServiceApplication.class
+com/biblioteca/prestamo/service/PrestamoService.class
+com/biblioteca/prestamo/entity/Prestamo.class
+com/biblioteca/prestamo/config/RestTemplateConfig.class
+com/biblioteca/prestamo/controller/PrestamoController.class
+com/biblioteca/prestamo/messaging/PrestamoEventPublisher.class
+com/biblioteca/prestamo/repository/PrestamoRepository.class
+com/biblioteca/prestamo/config/SecurityConfig.class
+com/biblioteca/prestamo/exception/BusinessException.class
+com/biblioteca/prestamo/entity/Prestamo$PrestamoBuilder.class
+com/biblioteca/prestamo/config/CacheConfig.class

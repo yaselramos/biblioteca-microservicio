@@ -1,0 +1,12 @@
+./prestamo-service/src/test/java/com/biblioteca/prestamo/controller/PrestamoControllerTest.java
+./prestamo-service/src/test/java/com/biblioteca/prestamo/service/PrestamoServiceTest.java
+./common-library/src/test/java/com/biblioteca/common/security/JwtServiceTest.java
+./common-library/src/test/java/com/biblioteca/common/exception/GlobalExceptionHandlerTest.java
+./libro-service/src/test/java/com/biblioteca/libro/controller/LibroControllerTest.java
+./libro-service/src/test/java/com/biblioteca/libro/service/LibroServiceTest.java
+./libro-service/src/test/java/com/biblioteca/libro/messaging/PrestamoEventListenerTest.java
+./auth-service/src/test/java/com/biblioteca/auth/controller/AuthControllerIntegrationTest.java
+./auth-service/src/test/java/com/biblioteca/auth/controller/AuthControllerTest.java
+./auth-service/src/test/java/com/biblioteca/auth/controller/UsuarioControllerTest.java
+./auth-service/src/test/java/com/biblioteca/auth/service/JwtServiceTest.java
+./auth-service/src/test/java/com/biblioteca/auth/service/UsuarioServiceTest.java

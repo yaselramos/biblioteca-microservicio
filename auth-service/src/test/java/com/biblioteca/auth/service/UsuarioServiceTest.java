@@ -1,5 +1,6 @@
 package com.biblioteca.auth.service;
 
+import com.biblioteca.auth.dto.UsuarioDto;
 import com.biblioteca.auth.entity.Usuario;
 import com.biblioteca.auth.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,16 +44,21 @@ class UsuarioServiceTest {
     @DisplayName("Debería guardar un usuario exitosamente")
     void deberiaGuardarUsuarioExitosamente() {
         // Given
+        UsuarioDto usuarioDto = new UsuarioDto();
+        usuarioDto.setUsuario("testuser");
+        usuarioDto.setPassword("password123");
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
         // When
-        Usuario resultado = usuarioService.guardar(usuario);
+        UsuarioDto resultado = usuarioService.guardar(usuarioDto);
 
         // Then
         assertNotNull(resultado);
-        assertEquals("testuser", resultado.getUsername());
+        assertEquals(1L, resultado.getId());
+        assertEquals("testuser", resultado.getUsuario());
+        assertEquals("password123", resultado.getPassword());
         assertEquals(Rol.USER, resultado.getRol());
-        verify(usuarioRepository, times(1)).save(usuario);
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
     @Test
@@ -62,17 +68,21 @@ class UsuarioServiceTest {
         Usuario usuario2 = new Usuario();
         usuario2.setId(2L);
         usuario2.setUsername("admin");
+        usuario2.setPassword("adminpass");
         usuario2.setRol(Rol.ADMIN);
 
-        List<Usuario> usuarios = Arrays.asList(usuario, usuario2);
-        when(usuarioRepository.findAll()).thenReturn(usuarios);
+        when(usuarioRepository.findAll()).thenReturn(Arrays.asList(usuario, usuario2));
 
         // When
-        List<Usuario> resultado = usuarioService.listar();
+        List<UsuarioDto> resultado = usuarioService.listar();
 
         // Then
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
+        assertEquals("testuser", resultado.get(0).getUsuario());
+        assertEquals(Rol.USER, resultado.get(0).getRol());
+        assertEquals("admin", resultado.get(1).getUsuario());
+        assertEquals(Rol.ADMIN, resultado.get(1).getRol());
         verify(usuarioRepository, times(1)).findAll();
     }
 
@@ -83,11 +93,13 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
 
         // When
-        Optional<Usuario> resultado = usuarioService.buscarPorId(1L);
+        Optional<UsuarioDto> resultado = usuarioService.buscarPorId(1L);
 
         // Then
         assertTrue(resultado.isPresent());
-        assertEquals("testuser", resultado.get().getUsername());
+        assertEquals(1L, resultado.get().getId());
+        assertEquals("testuser", resultado.get().getUsuario());
+        assertEquals(Rol.USER, resultado.get().getRol());
         verify(usuarioRepository, times(1)).findById(1L);
     }
 
@@ -98,7 +110,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
 
         // When
-        Optional<Usuario> resultado = usuarioService.buscarPorId(999L);
+        Optional<UsuarioDto> resultado = usuarioService.buscarPorId(999L);
 
         // Then
         assertFalse(resultado.isPresent());
@@ -109,20 +121,20 @@ class UsuarioServiceTest {
     @DisplayName("Debería actualizar usuario exitosamente")
     void deberiaActualizarUsuarioExitosamente() {
         // Given
-        Usuario usuarioActualizado = new Usuario();
-        usuarioActualizado.setUsername("updateduser");
+        UsuarioDto usuarioActualizado = new UsuarioDto();
+        usuarioActualizado.setUsuario("updateduser");
         usuarioActualizado.setPassword("newpassword");
         usuarioActualizado.setRol(Rol.ADMIN);
 
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Usuario resultado = usuarioService.actualizar(1L, usuarioActualizado);
+        UsuarioDto resultado = usuarioService.actualizar(1L, usuarioActualizado);
 
         // Then
         assertNotNull(resultado);
-        assertEquals("updateduser", resultado.getUsername());
+        assertEquals("updateduser", resultado.getUsuario());
         assertEquals("newpassword", resultado.getPassword());
         assertEquals(Rol.ADMIN, resultado.getRol());
         verify(usuarioRepository, times(1)).findById(1L);
@@ -133,18 +145,40 @@ class UsuarioServiceTest {
     @DisplayName("Debería retornar null cuando actualizar usuario inexistente")
     void deberiaRetornarNullCuandoActualizarUsuarioInexistente() {
         // Given
-        Usuario usuarioActualizado = new Usuario();
-        usuarioActualizado.setUsername("updateduser");
+        UsuarioDto usuarioActualizado = new UsuarioDto();
+        usuarioActualizado.setUsuario("updateduser");
 
         when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
 
         // When
-        Usuario resultado = usuarioService.actualizar(999L, usuarioActualizado);
+        UsuarioDto resultado = usuarioService.actualizar(999L, usuarioActualizado);
 
         // Then
         assertNull(resultado);
         verify(usuarioRepository, times(1)).findById(999L);
         verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Debería actualizar solo campos no nulos")
+    void deberiaActualizarSoloCamposNoNulos() {
+        // Test cada campo individualmente
+
+        // Solo usuario
+        UsuarioDto dtoU = new UsuarioDto(); dtoU.setUsuario("newU");
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(new Usuario(1L, "u", "p", Rol.USER)));
+        when(usuarioRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        assertEquals("newU", usuarioService.actualizar(1L, dtoU).getUsuario());
+        
+        // Solo password
+        UsuarioDto dtoP = new UsuarioDto(); dtoP.setPassword("newP");
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(new Usuario(1L, "u", "p", Rol.USER)));
+        assertEquals("newP", usuarioService.actualizar(1L, dtoP).getPassword());
+        
+        // Solo rol
+        UsuarioDto dtoR = new UsuarioDto(); dtoR.setRol(Rol.ADMIN);
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(new Usuario(1L, "u", "p", Rol.USER)));
+        assertEquals(Rol.ADMIN, usuarioService.actualizar(1L, dtoR).getRol());
     }
 
     @Test
@@ -178,4 +212,3 @@ class UsuarioServiceTest {
         verify(usuarioRepository, never()).deleteById(any());
     }
 }
-

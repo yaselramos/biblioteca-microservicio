@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PrestamoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">prestamo-service</a> &gt; <a href="index.source.html" class="el_package">com.biblioteca.prestamo.controller</a> &gt; <span class="el_source">PrestamoController.java</span></div><h1>PrestamoController.java</h1><pre class="source lang-java linenums">package com.biblioteca.prestamo.controller;
+
+import com.biblioteca.prestamo.entity.Prestamo;
+import com.biblioteca.prestamo.service.PrestamoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * Controlador de Préstamos con soporte de paginación
+ */
+@RestController
+@RequestMapping(&quot;/prestamos&quot;)
+@Tag(name = &quot;Préstamos&quot;, description = &quot;API de gestión de préstamos con paginación&quot;)
+public class PrestamoController {
+
+    private final PrestamoService service;
+
+<span class="fc" id="L30">    public PrestamoController(PrestamoService service) {</span>
+<span class="fc" id="L31">        this.service = service;</span>
+<span class="fc" id="L32">    }</span>
+
+    @PostMapping(&quot;/{libroId}&quot;)
+    @Operation(summary = &quot;Crear un nuevo préstamo&quot;)
+    public ResponseEntity&lt;Prestamo&gt; prestar(@PathVariable Long libroId, Authentication auth) {
+<span class="fc" id="L37">        String username = auth.getName();</span>
+<span class="fc" id="L38">        Prestamo prestamo = service.prestarLibro(username, libroId);</span>
+<span class="fc" id="L39">        return ResponseEntity.status(201).body(prestamo);</span>
+    }
+
+    @PutMapping(&quot;/{prestamoId}/devolver&quot;)
+    @Operation(summary = &quot;Devolver un libro prestado&quot;)
+    public ResponseEntity&lt;Prestamo&gt; devolver(@PathVariable Long prestamoId) {
+<span class="fc" id="L45">        Prestamo prestamo = service.devolverLibro(prestamoId);</span>
+<span class="fc" id="L46">        return ResponseEntity.ok(prestamo);</span>
+    }
+
+    /**
+     * Mis préstamos SIN paginación (mantener compatibilidad)
+     */
+    @GetMapping
+    @Operation(summary = &quot;Obtener mis préstamos (sin paginación)&quot;)
+    public ResponseEntity&lt;List&lt;Prestamo&gt;&gt; misPrestamos(Authentication auth) {
+<span class="fc" id="L55">        String username = auth.getName();</span>
+<span class="fc" id="L56">        List&lt;Prestamo&gt; prestamos = service.obtenerPrestamosUsuario(username);</span>
+<span class="fc" id="L57">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Mis préstamos CON paginación (RECOMENDADO)
+     */
+    @GetMapping(&quot;/paginated&quot;)
+    @Operation(summary = &quot;Obtener mis préstamos con paginación (RECOMENDADO)&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; misPrestamosPaginados(
+            Authentication auth,
+            @Parameter(description = &quot;Número de página (empezando en 0)&quot;)
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @Parameter(description = &quot;Tamaño de página&quot;)
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+            @Parameter(description = &quot;Campo de ordenamiento&quot;)
+            @RequestParam(defaultValue = &quot;fechaPrestamo&quot;) String sortBy,
+            @Parameter(description = &quot;Dirección de ordenamiento (asc o desc)&quot;)
+            @RequestParam(defaultValue = &quot;desc&quot;) String direction
+    ) {
+<span class="fc" id="L76">        String username = auth.getName();</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        Sort.Direction sortDirection = direction.equalsIgnoreCase(&quot;desc&quot;)</span>
+<span class="fc" id="L78">            ? Sort.Direction.DESC</span>
+<span class="fc" id="L79">            : Sort.Direction.ASC;</span>
+
+<span class="fc" id="L81">        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));</span>
+<span class="fc" id="L82">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosUsuarioPaginados(username, pageable);</span>
+
+<span class="fc" id="L84">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    @GetMapping(&quot;/activos&quot;)
+    @Operation(summary = &quot;Obtener mis préstamos activos (sin paginación)&quot;)
+    public ResponseEntity&lt;List&lt;Prestamo&gt;&gt; misPrestamosActivos(Authentication auth) {
+<span class="fc" id="L90">        String username = auth.getName();</span>
+<span class="fc" id="L91">        List&lt;Prestamo&gt; prestamos = service.obtenerPrestamosActivos(username);</span>
+<span class="fc" id="L92">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Mis préstamos activos CON paginación
+     */
+    @GetMapping(&quot;/activos/paginated&quot;)
+    @Operation(summary = &quot;Obtener mis préstamos activos con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; misPrestamosActivosPaginados(
+            Authentication auth,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L105">        String username = auth.getName();</span>
+<span class="fc" id="L106">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, &quot;fechaPrestamo&quot;));</span>
+<span class="fc" id="L107">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosActivosPaginados(username, pageable);</span>
+<span class="fc" id="L108">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Mis préstamos devueltos CON paginación
+     */
+    @GetMapping(&quot;/devueltos/paginated&quot;)
+    @Operation(summary = &quot;Obtener mis préstamos devueltos con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; misPrestamosDevueltosPaginados(
+            Authentication auth,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L121">        String username = auth.getName();</span>
+<span class="fc" id="L122">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, &quot;fechaDevolucion&quot;));</span>
+<span class="fc" id="L123">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosDevueltosPaginados(username, pageable);</span>
+<span class="fc" id="L124">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    @GetMapping(&quot;/todos&quot;)
+    @Operation(summary = &quot;Listar todos los préstamos (sin paginación - ADMIN)&quot;)
+    public ResponseEntity&lt;List&lt;Prestamo&gt;&gt; listarTodos() {
+<span class="fc" id="L130">        List&lt;Prestamo&gt; prestamos = service.listarTodos();</span>
+<span class="fc" id="L131">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Todos los préstamos CON paginación (ADMIN)
+     */
+    @GetMapping(&quot;/todos/paginated&quot;)
+    @Operation(summary = &quot;Listar todos los préstamos con paginación (ADMIN)&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; listarTodosPaginados(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+            @RequestParam(defaultValue = &quot;fechaPrestamo&quot;) String sortBy,
+            @RequestParam(defaultValue = &quot;desc&quot;) String direction
+    ) {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        Sort.Direction sortDirection = direction.equalsIgnoreCase(&quot;desc&quot;)</span>
+<span class="fc" id="L146">            ? Sort.Direction.DESC</span>
+<span class="fc" id="L147">            : Sort.Direction.ASC;</span>
+
+<span class="fc" id="L149">        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));</span>
+<span class="fc" id="L150">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosPaginados(pageable);</span>
+
+<span class="fc" id="L152">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Préstamos por libro con paginación
+     */
+    @GetMapping(&quot;/libro/{libroId}&quot;)
+    @Operation(summary = &quot;Obtener préstamos de un libro específico con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; prestamosPorLibro(
+            @PathVariable Long libroId,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L165">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, &quot;fechaPrestamo&quot;));</span>
+<span class="fc" id="L166">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosPorLibro(libroId, pageable);</span>
+<span class="fc" id="L167">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Préstamos por rango de fechas con paginación
+     */
+    @GetMapping(&quot;/fecha-rango&quot;)
+    @Operation(summary = &quot;Obtener préstamos por rango de fechas con paginación&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; prestamosPorFecha(
+            @Parameter(description = &quot;Fecha de inicio (formato: yyyy-MM-dd)&quot;)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @Parameter(description = &quot;Fecha de fin (formato: yyyy-MM-dd)&quot;)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L183">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, &quot;fechaPrestamo&quot;));</span>
+<span class="fc" id="L184">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosPorFecha(fechaInicio, fechaFin, pageable);</span>
+<span class="fc" id="L185">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    /**
+     * Préstamos vencidos con paginación
+     */
+    @GetMapping(&quot;/vencidos&quot;)
+    @Operation(summary = &quot;Obtener préstamos vencidos (más de 30 días sin devolver)&quot;)
+    public ResponseEntity&lt;Page&lt;Prestamo&gt;&gt; prestamosVencidos(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="fc" id="L197">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, &quot;fechaPrestamo&quot;));</span>
+<span class="fc" id="L198">        Page&lt;Prestamo&gt; prestamos = service.obtenerPrestamosVencidos(pageable);</span>
+<span class="fc" id="L199">        return ResponseEntity.ok(prestamos);</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Buscar préstamo por ID&quot;)
+    public ResponseEntity&lt;Prestamo&gt; buscarPorId(@PathVariable Long id) {
+<span class="fc" id="L205">        return service.buscarPorId(id)</span>
+<span class="fc" id="L206">                .map(ResponseEntity::ok)</span>
+<span class="fc" id="L207">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

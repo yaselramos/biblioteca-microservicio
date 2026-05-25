@@ -1,7 +1,7 @@
 package com.biblioteca.prestamo.messaging;
 
-import com.biblioteca.prestamo.config.RabbitMQConfig;
-import com.biblioteca.prestamo.dto.PrestamoEvent;
+import com.biblioteca.common.config.RabbitMQConfig;
+import com.biblioteca.common.dto.PrestamoEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -18,7 +18,7 @@ public class PrestamoEventPublisher {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void publishPrestamoEvent(PrestamoEvent event) {
+    public void publishPrestamoEvent(  PrestamoEvent event) {
         logger.info("📤 Publicando evento de préstamo: {}", event);
         try {
             rabbitTemplate.convertAndSend(RabbitMQConfig.PRESTAMO_QUEUE, event);

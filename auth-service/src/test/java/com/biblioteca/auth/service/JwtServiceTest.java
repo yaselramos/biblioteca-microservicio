@@ -1,5 +1,6 @@
 package com.biblioteca.auth.service;
 
+import com.biblioteca.common.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Tests para JwtService")
 class JwtServiceTest {
 
+
     private JwtService jwtService;
     private String secret = "mySecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLong12345678";
     private String username = "testuser";
@@ -38,7 +40,7 @@ class JwtServiceTest {
 
         // Then
         assertNotNull(token);
-        assertTrue(token.split("\\.").length == 3); // JWT tiene 3 partes
+        assertEquals(3,token.split("\\.").length ); // JWT tiene 3 partes
     }
 
     @Test

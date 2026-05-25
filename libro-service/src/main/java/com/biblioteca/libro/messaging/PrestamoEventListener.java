@@ -1,7 +1,8 @@
 package com.biblioteca.libro.messaging;
 
-import com.biblioteca.libro.config.RabbitMQConfig;
-import com.biblioteca.libro.dto.PrestamoEvent;
+
+import com.biblioteca.common.dto.PrestamoEvent;
+import com.biblioteca.common.config.RabbitMQConfig;
 import com.biblioteca.libro.service.LibroService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +22,14 @@ public class PrestamoEventListener {
 
     @RabbitListener(queues = RabbitMQConfig.PRESTAMO_QUEUE)
     public void handlePrestamoEvent(PrestamoEvent event) {
-        logger.info("📥 Recibido evento de préstamo: {}", event);
-
         try {
+            logger.info("📥 Recibido evento de préstamo: {}", event);
+
+            if (event.getEventType() == null) {
+                logger.warn("⚠️ Evento recibido sin tipo (eventType es null). Ignorando.");
+                return;
+            }
+
             switch (event.getEventType()) {
                 case PRESTAMO_CREADO:
                     logger.info("📖 Procesando préstamo creado para libro ID: {}", event.getLibroId());
